@@ -51,14 +51,14 @@ def send_discord_webhook(webhook_url, message):
 
 def load_title_data_from_file():
     try:
-        with open('/home/orxifytagging/mysite/titleData.json', 'r') as file:
+        with open('titleData.json', 'r') as file:
             return json.load(file)
     except Exception as e:
         logger.error(f"Error loading title data: {e}")
         return {}
 
 def save_title_data_to_file(data):
-    with open('/home/orxifytagging/mysite/titleData.json', 'w') as file:
+    with open('titleData.json', 'w') as file:
         json.dump(data, file, indent=2)
 
 @app.route('/api/titledata', methods=['GET'])
