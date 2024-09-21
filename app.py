@@ -87,9 +87,9 @@ def save_title_data_to_file(data):
 
 @app.route('/api/titledata', methods=['GET'])
 def get_title_data():
-    data = load_title_data_from_file()
+    data = get_file_contents(data)  # Call the get_file_contents function
     logger.info('Title data fetched: %s', data)
-    return jsonify(data)
+    return jsonify(data)  # Return the decoded JSON content
 
 @app.route('/api/titledata', methods=['POST'])
 def update_title_data():
