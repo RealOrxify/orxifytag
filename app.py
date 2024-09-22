@@ -36,30 +36,6 @@ class UploadData:
         self.vel_z = 0.0
         self.cosmetics_owned = ""
         self.cosmetics_worn = ""
-def get_file_contents(data):
-    # Decode the base64-encoded content
-    content_bytes = base64.b64decode(data["content"])
-    content_str = content_bytes.decode('utf-8')
-
-    # Parse the JSON content
-    content_json = json.loads(content_str)
-
-    # Return the JSON content as a JSON response
-    return jsonify(content_json)
-
-data = {
-  "name": "titleData.json",
-  "path": "titleData.json",
-  "sha": "27e5ddc407e4ddc80f84c221c5ee7b04586feea4",
-  "size": 17069,
-  "url": "https://api.github.com/repos/RealOrxify/orxifytag/contents/titleData.json?ref=main",
-  "html_url": "https://github.com/RealOrxify/orxifytag/blob/main/titleData.json",
-  "git_url": "https://api.github.com/repos/RealOrxify/orxifytag/git/blobs/27e5ddc407e4ddc80f84c221c5ee7b04586feea4",
-  "download_url": "https://raw.githubusercontent.com/RealOrxify/orxifytag/main/titleData.json",
-  "type": "file",
-  "content": "ew0KICAiMjAyNC0wNS1BZGRPclJlbW92ZURMQ093bmVyc2hpcFYyIjogImZh\nbHNlIiwNCiAgIjIwMjQtMDUtQnJvYWRjYXN0TXlSb29tVjIiOiAiZmFsc2Ui\nLA0KICAiMjAyNC0wNS1SZXR1cm5DdXJyZW50VmVyc2lvblYyIjogIiBmYWxz\nZSIsDQogICIyMDI0LTA1LVRyeURpc3RyaWJ1dGVDdXJyZW5jeVYyIjogImZh\nbHNlIiwNCiAgIjIwMjQtMDYtQ29zbWV0aWNBdXRoZW50aWNhdGlvblYyIjog\nImZhbHNlIiwNCiAgIjIwMjQtMDgtS0lESW50ZWdyYXRpb25WMSI6ICJmYWxz\nZSIsDQogICJBbGxvd2VkQ2xpZW50VmVyc2lvbnMiOiAie1wiY2xpZW50VmVy\nc2lvbnNcIjpbXCJiZXRhMS4xLjEuODZcIixcImxpdmUxLjEuMS44NlwiLFwi\nYmV0YTEuMS4xLjg3XCIsXCJsaXZlMS4xLjEuODdcIixcImJldGExLjEuMS41\nMVwiLFwiYmV0YTEuMS4xLjgwXCIsXCJiZXRhMS4xLjEuODhcIixcImxpdmUx\nLjEuMS44OFwiXX0iLA0KICAiQXV0b011dGVDaGVja2VkSG91cnMiOiAiMzM2\nIiwNCiAgIkF1dG9OYW1lX0FkdmVyYnMiOiAiW1wiQ29vbFwiLFwiRmluZVwi\nLFwiQmFsZFwiLFwiQm9sZFwiLFwiSGFsZlwiLFwiT25seVwiLFwiQ2FsbVwi\nLFwiRmFiXCIsXCJJY2VcIixcIk1hZFwiLFwiUmFkXCIsXCJCaWdcIixcIk5l\nd1wiLFwiT2xkXCIsXCJTaHlcIl0iLA0KICAiQXV0b05hbWVfTm91bnMiOiAi\nW1wiR29yaWxsYVwiLFwiQ2hpY2tlblwiLFwiRGFybGluZ1wiLFwiU2xvdGhc\nIixcIktpbmdcIixcIlF1ZWVuXCIsXCJSb3lhbFwiLFwiTWFqb3JcIixcIkFj\ndG9yXCIsXCJBZ2VudFwiLFwiRWxkZXJcIixcIkhvbmV5XCIsXCJOdXJzZVwi\nLFwiRG9jdG9yXCIsXCJSZWJlbFwiLFwiU2hhcGVcIixcIkFsbHlcIixcIkRy\naXZlclwiLFwiRGVwdXR5XCJdIiwNCiAgIkJ1bmRsZUtpb3NrQnV0dG9uIjog\nIlwiRElTLkdHL0dPUklMTEFUQUdWM1wiIiwNCiAgIkJ1bmRsZUtpb3NrU2ln\nbiI6ICJcIkRJU0NPUkQuR0cvR09SSUxMQVRBR1YzXCIiLA0KICAiQnVuZGxl\nTGFyZ2VTaWduIjogIlwiRElTQ09SRC5HRy9HT1JJTExBVEFHVjNcIiIsDQog\nICJDcmVkaXRzRGF0YSI6ICJbe1wiVGl0bGVcIjpcIkRFViBURUFNXCIsXCJF\nbnRyaWVzXCI6W1wiQ
-
-webhook_url = "https://discord.com/api/webhooks/1211435155000922122/h7_U2IBJdULsfEM_t-CJq3kpiGypPmwMKUy1hPoQ5_cnwiVuMcJi1MUiJ0NowvRph4O0"
 def send_discord_webhook(webhook_url, message):
     data = {"content": message}
     result = requests.post(webhook_url, data=json.dumps(data), headers={"Content-Type": "application/json"})
@@ -75,14 +51,14 @@ def send_discord_webhook(webhook_url, message):
 
 def load_title_data_from_file():
     try:
-        with open('titleData.json', 'r') as file:
+        with open('/orxifytag/titleData.json', 'r') as file:
             return json.load(file)
     except Exception as e:
         logger.error(f"Error loading title data: {e}")
         return {}
 
 def save_title_data_to_file(data):
-    with open('titleData.json', 'w') as file:
+    with open('orxifytag/titleData.json', 'w') as file:
         json.dump(data, file, indent=2)
 
 @app.route('/api/titledata', methods=['GET'])
