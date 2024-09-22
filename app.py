@@ -89,38 +89,56 @@ def photon_api():
     })
 
 @app.route('/api/playfabauthenticate', methods=['POST'])
-def playfab_auth():
+def playfabauth():
     data = request.json
+    print("Received data at /api/playfabauthenticate:", data)
     if 'CustomId' not in data:
         return jsonify({'Error': 'Bad Request', 'Message': 'CustomId is required'}), 400
     custom_id = data['CustomId']
-    numbers = custom_id.split("OCULUS")[1]
-    new_id = f"OCULUS{numbers}"
-    headers = {'Content-Type': 'application/json', 'X-Authentication': PlayFabSettings.DeveloperSecretKey}
+    headers = {'Content-Type': 'application/json', 'X-SecretKey': SecretKey}
 
-    try:
-        login_endpoint = f"https://{PlayFabSettings.TitleId}.playfabapi.com/Client/LoginWithCustomId"
-        login_payload = {'TitleId': PlayFabSettings.TitleId, 'CustomId': new_id, 'CreateAccount': True}
-        login_response = requests.post(login_endpoint, headers=headers, json=login_payload)
-        login_response.raise_for_status()  
+    # PlayFab login
+    login_endpoint = f"https://{titleider}.playfabapi.com/Server/LoginWithServerCustomId"
+    login_payload = {'TitleId': titleider, 'ServerCustomId': custom_id, 'CreateAccount': True}
+    login_response = requests.post(login_endpoint, headers=headers, json=login_payload)
+    if login_response.status_code == 200:
+        write_playfab_id
         response_data = login_response.json()["data"]
         playfab_id = response_data['PlayFabId']
         session_ticket = response_data['SessionTicket']
 
-        
+        # For user authentication, use SessionTicket
         user_auth_headers = {'Content-Type': 'application/json', 'X-Authorization': session_ticket}
-        link_endpoint = f"https://{PlayFabSettings.TitleId}.playfabapi.com/Client/LinkCustomID"
-        link_payload = {'CustomId': new_id, 'ForceLink': True}
+        link_endpoint = f"https://{titleider}.playfabapi.com/Client/LinkCustomID"
+        link_payload = {'PlayFabId': playfab_id, 'CustomId': custom_id, 'ForceLink': True}
         link_response = requests.post(link_endpoint, headers=user_auth_headers, json=link_payload)
-        link_response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
-        logger.info("CustomID successfully linked to the PlayFab account.")
+        if link_response.status_code == 200:
+            print("CustomID successfully linked to the PlayFab account.")
+        else:
+            print(f"Failed to link CustomID: {link_response.status_code} - {link_response.text}")
         entityId = response_data['EntityToken']['Entity']['Id']
         entityType = response_data['EntityToken']['Entity']['Type']
         entityToken = response_data['EntityToken']['EntityToken']
         return jsonify({'SessionTicket': session_ticket, 'PlayFabId': playfab_id, 'EntityId': entityId, 'EntityType': entityType, 'EntityToken': entityToken}), 200
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error authenticating with PlayFab: {e}")
-        return jsonify({'Error': 'PlayFab Error', 'Message': 'Login Failed'}), 500
+
+    elif login_response.status_code == 403:
+        ban_info = login_response.json()
+        if ban_info.get('errorCode') == 1002:
+            ban_message = ban_info.get('errorMessage', "No ban message provided.")
+            ban_details = ban_info.get('errorDetails', {})
+            ban_expiration_key = next(iter(ban_details.keys()), None)
+            ban_expiration_list = ban_details.get(ban_expiration_key, [])
+            ban_expiration = ban_expiration_list[0] if len(ban_expiration_list) > 0 else "No expiration date provided."
+            print(ban_info)
+            return jsonify({'BanMessage': ban_message, 'BanExpirationTime': ban_expiration}), 403
+        else:
+            error_message = ban_info.get('errorMessage', 'Forbidden without ban information.')
+            return jsonify({'Error': 'PlayFab Error', 'Message': error_message}), 403
+
+    else:
+        playfab_error = login_response.json().get("error", {})
+        error_message = playfab_error.get("errorMessage", "Login failed")
+        return jsonify({'Error': 'PlayFab Error', 'Message': error_message, 'PlayFabError': playfab_error}), login_response.status_code
 @app.route('/')
 def index():
     jsonify(return) "{
